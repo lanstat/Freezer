@@ -8,15 +8,25 @@ package org.tyranos.freezer.test;
 
 import java.sql.Date;
 
+import org.tyranos.freezer.Column;
+import org.tyranos.freezer.PrimaryKey;
+import org.tyranos.freezer.Table;
+
 /**
  *
  * @author mauricio
  */
-public class Cliente {
+public class Cliente extends Table{
+	
+	@PrimaryKey
     public Integer Codigo;
+	@Column
     public String Nombre;
+	@Column
     public Integer Nit;
+	@Column
     public Integer Telefono;
+	@Column
     public Date Fecha;
 
     @Override
