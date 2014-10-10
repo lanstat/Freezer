@@ -6,11 +6,7 @@
 package org.tyranos.freezer;
 
 import java.lang.reflect.Field;
-import java.sql.Date;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.util.ArrayList;
 
 /**
  *
@@ -18,6 +14,11 @@ import java.util.ArrayList;
  * @param <T>
  */
 public class Table {
+	public final String insert;
+	
+	public Table(){
+		insert = generateSQLInsert();
+	}
 	
 	private String getTypeName(Class<?> classType){
 		String typeName;
@@ -35,7 +36,9 @@ public class Table {
 		return typeName;
 	}
 	
-	public void save(){}
+	public void createTable() throws SQLException, Exception{
+		DBConnection.getInstance().executeStatement(generateSQLCreate());
+	}
 	
 	public String generateSQLCreate() throws Exception{
 		StringBuilder sql;
@@ -65,5 +68,46 @@ public class Table {
 		sql.insert(0, "CREATE TABLE "+this.getClass().getSimpleName()+"(");
 		
 		return sql.toString();
+	}
+	
+	private String generateSQLInsert(){
+		StringBuilder sql;
+		Field[] fields;
+		
+		sql = new StringBuilder();
+		fields = this.getClass().getFields();
+		for(Field field : fields){
+			if(field.getAnnotation(Column.class) != null){
+				sql.append(field.getName());
+				sql.append(", ");
+			}
+		}
+		sql.delete(sql.length()-2, sql.length());
+		sql.append(") VALUES (");
+		sql.insert(0, "INSERT INTO "+this.getClass().getSimpleName()+"(");
+		
+		return sql.toString();
+	}
+	
+	public void save(){
+		String sql;
+		Field[] fields;
+		
+		try {
+			sql = insert;
+			fields = this.getClass().getFields();
+			for(Field field : fields){
+				if(field.getAnnotation(Column.class) != null || field.getAnnotation(PrimaryKey.class) != null){
+					sql += field.get(this);
+					sql += ", ";
+				}
+			}
+			sql = sql.substring(0, sql.length()-2);
+			sql += ")";
+			
+			//DBConnection.getInstance().executeStatement(insert);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
 	}
 }

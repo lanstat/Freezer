@@ -27,7 +27,9 @@ public class TableTesting {
     public static void main(String[] args) {
         try {
 			Cliente c = new Cliente();
-			System.out.println(c.generateSQLCreate());
+			c.Codigo = 12;
+			c.Nombre = "abc";
+			c.save();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
