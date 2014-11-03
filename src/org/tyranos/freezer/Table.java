@@ -13,7 +13,6 @@ import org.tyranos.freezer.annotations.Column;
 /**
  *
  * @author lanstat
- * @param <T>
  */
 public class Table {
 	public final String insert;
@@ -23,7 +22,10 @@ public class Table {
 	}
 	
 	public void createTable() throws SQLException, Exception{
-		DBConnection.getInstance().executeStatement(generateSQLCreate());
+		DBConnectionFactory
+			.getInstance()
+			.getConnection(Database.MYSQL)
+			.executeStatement(generateSQLCreate());
 	}
 	
 	public String generateSQLCreate() throws Exception{

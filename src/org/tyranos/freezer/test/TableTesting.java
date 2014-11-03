@@ -6,15 +6,6 @@
 
 package org.tyranos.freezer.test;
 
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.tyranos.freezer.DBConnection;
-import org.tyranos.freezer.Table;
-
 /**
  *
  * @author mauricio
