@@ -8,9 +8,9 @@ package org.tyranos.freezer.test;
 
 import java.sql.Date;
 
-import org.tyranos.freezer.Column;
-import org.tyranos.freezer.PrimaryKey;
 import org.tyranos.freezer.Table;
+import org.tyranos.freezer.annotations.Column;
+import org.tyranos.freezer.annotations.DataType;
 
 /**
  *
@@ -18,15 +18,15 @@ import org.tyranos.freezer.Table;
  */
 public class Cliente extends Table{
 	
-	@PrimaryKey
+	@Column (PrimaryKey = true)
     public Integer Codigo;
-	@Column
+	@Column (Type=DataType.Varchar, Accuracy=32) 
     public String Nombre;
-	@Column
+	@Column (Type=DataType.Int32)
     public Integer Nit;
-	@Column
+	@Column (Type=DataType.Int32)
     public Integer Telefono;
-	@Column
+	@Column (Type=DataType.Datetime)
     public Date Fecha;
 
     @Override

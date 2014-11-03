@@ -8,6 +8,8 @@ package org.tyranos.freezer;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 
+import org.tyranos.freezer.annotations.Column;
+
 /**
  *
  * @author lanstat
@@ -20,22 +22,6 @@ public class Table {
 		insert = generateSQLInsert();
 	}
 	
-	private String getTypeName(Class<?> classType){
-		String typeName;
-		
-		if(classType.getName().equals("java.lang.Integer")){
-			typeName = "INTEGER";
-		} else if (classType.getName().equals("java.lang.String")) {
-			typeName = "TEXT";
-		} else if (classType.getName().equals("java.sql.Date")) {
-			typeName = "DATE";
-		} else {
-			typeName = null;
-		}
-		
-		return typeName;
-	}
-	
 	public void createTable() throws SQLException, Exception{
 		DBConnection.getInstance().executeStatement(generateSQLCreate());
 	}
@@ -44,23 +30,52 @@ public class Table {
 		StringBuilder sql;
 		Field[] fields;
 		String type;
+		Column annotation;
 		
 		sql = new StringBuilder();
 		fields = this.getClass().getFields();
 		for(Field field : fields){
-			if(field.getAnnotation(Column.class) != null || field.getAnnotation(PrimaryKey.class) != null){
-				type = getTypeName(field.getType());
-				if(type != null){
-					sql.append(field.getName());
-					sql.append(" ");
-					sql.append(type);
-					if(field.getAnnotation(PrimaryKey.class) != null){
-						sql.append(" PRIMARY KEY");
-					}
-					sql.append(", ");
-				} else {
-					throw new Exception(type+" no es tipo de dato primitivo");
+			if(field.getAnnotation(Column.class) != null){
+				annotation = field.getAnnotation(Column.class);
+				sql.append(field.getName());
+				sql.append(" ");
+				switch (annotation.Type()) {
+					case Int16:
+						type = "SMALLINT";
+						break;
+					case Int32:
+						type = "INT";
+						break;
+					case Date:
+						type = "DATE";
+						break;
+					case Datetime:
+						type = "DATETIME";
+						break;
+					case Int64:
+						type = "LONG";
+						break;
+					case Text:
+						type = "TEXT";
+						break;
+					case Varchar:
+						type = "VARCHAR(" + annotation.Accuracy() + ")";
+						break;
+					default:
+						type = "INT";
+						break;
 				}
+				
+				sql.append(type);
+				
+				if(annotation.PrimaryKey()){
+					sql.append(" PRIMARY KEY");
+				} else {
+					sql.append(" DEFAULT ");
+					sql.append(annotation.DefaultValue());
+				}
+				
+				sql.append(", ");
 			}
 		}
 		sql.delete(sql.length()-2, sql.length());
@@ -92,19 +107,39 @@ public class Table {
 	public void save(){
 		String sql;
 		Field[] fields;
+		Column annotation;
 		
 		try {
 			sql = insert;
 			fields = this.getClass().getFields();
 			for(Field field : fields){
-				if(field.getAnnotation(Column.class) != null || field.getAnnotation(PrimaryKey.class) != null){
-					sql += field.get(this);
+				if(field.getAnnotation(Column.class) != null){
+					annotation = field.getAnnotation(Column.class);
+					if(!annotation.Nullable() && field.get(this) == null){
+						throw new Exception("Elemento nulo en una columna sin soporte para nulos");
+					}
+					if(field.get(this) == null){
+						sql += "NULL";
+					}else{
+						switch (annotation.Type()) {
+						case Varchar:
+						case Text:
+						case Date:
+						case Datetime:
+							
+								sql += "'" + field.get(this) + "'";
+							break;
+						default:
+							sql += field.get(this);
+							break;
+						}
+					}
 					sql += ", ";
 				}
 			}
 			sql = sql.substring(0, sql.length()-2);
-			sql += ")";
-			
+			sql += ");";
+			System.out.println(sql);
 			//DBConnection.getInstance().executeStatement(insert);
 		} catch (Exception e) {
 			e.printStackTrace();

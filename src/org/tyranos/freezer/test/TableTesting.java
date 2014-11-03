@@ -29,9 +29,12 @@ public class TableTesting {
 			Cliente c = new Cliente();
 			c.Codigo = 12;
 			c.Nombre = "abc";
+			Proveedor p = new Proveedor();
+			System.out.println(c.generateSQLCreate());
 			c.save();
+			System.out.println();
+			//System.out.println(p.insert);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
